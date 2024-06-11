@@ -10,7 +10,7 @@ def sir_model(y, t, beta, gamma):
 from scipy.integrate import odeint
 
 ###
-data = np.array([3, 8, 28, 76, 176, 325, 473, 530, 495, 385])
+data = np.array([3, 8, 28, 76, 176, 325, 473, 530, 495, 385]) / 1000
 ###
 
 def loss(params_to_fit, t, data):
@@ -22,12 +22,22 @@ def loss(params_to_fit, t, data):
 from scipy.optimize import minimize
 
 # initial guess for the parameters to fit (beta and gamma)
-p0 = [990, 10, 0, 0.5, 0.5]
+p0 = [0.997, 0.003, 0, 0.5, 0.5]
 
 # time points
 t = np.linspace(0, len(data), len(data))
 
 # fit the model
-optimal = minimize(loss, p0, args=(t, data), method='L-BFGS-B', bounds=[(0, 1000), (0, 1000), (0, 1000), (0.00000001, 1.0), (0.00000001, 1.0)])
+optimal = minimize(loss, p0, args=(t, data), method='L-BFGS-B', bounds=[(0, 2), (0, 2), (0, 2), (0.00000001, 1.0), (0.00000001, 1.0)])
 
 print(optimal.x)
+
+S0_optimal, I0_optimal, R0_optimal, beta_optimal, gamma_optimal = optimal.x
+
+# Predict and compare with data
+# Integrate the SIR equations over the time grid, t.
+solution_optimal = odeint(sir_model, [S0_optimal, I0_optimal, R0_optimal], t, args=(beta_optimal, gamma_optimal))
+
+from plot import plot_sir
+
+plot_sir(solution_optimal, t, data)
