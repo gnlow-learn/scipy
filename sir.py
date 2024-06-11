@@ -10,26 +10,24 @@ def sir_model(y, t, beta, gamma):
 from scipy.integrate import odeint
 
 ###
-S0, I0, R0 = 0.99, 0.01, 0
 data = np.array([3, 8, 28, 76, 176, 325, 473, 530, 495, 385])
 ###
 
 def loss(params_to_fit, t, data):
     size = len(data)
-    beta, gamma = params_to_fit
+    S0, I0, R0, beta, gamma = params_to_fit
     solution = odeint(sir_model, [S0, I0, R0], t, args=(beta, gamma))
     return np.sqrt(np.mean((solution[:,1] - data)**2))
 
 from scipy.optimize import minimize
 
 # initial guess for the parameters to fit (beta and gamma)
-p0 = [0.5, 0.5]
+p0 = [990, 10, 0, 0.5, 0.5]
 
 # time points
 t = np.linspace(0, len(data), len(data))
 
 # fit the model
-optimal = minimize(loss, p0, args=(t, data), method='L-BFGS-B', bounds=[(0.00000001, 1.0), (0.00000001, 1.0)])
-beta_optimal, gamma_optimal = optimal.x
+optimal = minimize(loss, p0, args=(t, data), method='L-BFGS-B', bounds=[(0, 1000), (0, 1000), (0, 1000), (0.00000001, 1.0), (0.00000001, 1.0)])
 
-print(beta_optimal, gamma_optimal)
+print(optimal.x)
